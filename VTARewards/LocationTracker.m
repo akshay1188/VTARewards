@@ -21,6 +21,8 @@ static LocationTracker *locationTracker = nil;
 @property (nonatomic, strong) NSDictionary *start;
 @property (nonatomic, strong) NSDictionary *stop;
 @property (nonatomic, strong) NSMutableDictionary *tripData;
+@property (nonatomic, strong) NSTimer *timer;
+@property (nonatomic, assign) UIBackgroundTaskIdentifier locationTrackingTask;
 
 @end
 
@@ -54,6 +56,8 @@ static LocationTracker *locationTracker = nil;
     //TODO:
     //Add background location tracking
     if ([CLLocationManager authorizationStatus] == kCLAuthorizationStatusAuthorizedAlways) {
+
+        [self.locationManager startMonitoringSignificantLocationChanges];
         [self.locationManager startUpdatingLocation];
         
         //clear all data before capturing new
@@ -68,6 +72,7 @@ static LocationTracker *locationTracker = nil;
     //TODO:
     //Add background location tracking
     [self.locationManager stopUpdatingLocation];
+    [self.locationManager stopMonitoringSignificantLocationChanges];
     
     //remove last object from waypoints because it is already present in stop location
     if (self.waypoints != nil) {
@@ -102,6 +107,11 @@ static LocationTracker *locationTracker = nil;
 
 -(void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations{
     NSLog(@"locations %@",locations);
+    //background
+    self.locationTrackingTask = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
+        [[UIApplication sharedApplication] endBackgroundTask:self.locationTrackingTask];
+        self.locationTrackingTask = UIBackgroundTaskInvalid;
+    }];
     if (self.waypoints == nil) {
         self.waypoints = [[NSMutableArray alloc]init];
     }
@@ -128,7 +138,7 @@ static LocationTracker *locationTracker = nil;
     }
     //every recent location is overwritten to the stop location
     self.stop = locationDict;
-//    [self stopUpdatingLocation];
+
 }
 
 -(void)locationManager:(CLLocationManager *)manager didFailWithError:(NSError *)error{

@@ -15,7 +15,6 @@
 
 @property KTKLocationManager *locationManager;
 @property (weak, nonatomic) IBOutlet UILabel *statusLabel;
-
 @end
 
 @implementation ViewController
@@ -56,6 +55,7 @@
     [notification setAlertAction:@"Hmmm, OK!"];
     [[UIApplication sharedApplication] scheduleLocalNotification:notification];
     [self.statusLabel setText:@"Beacon found. Tracking location..."];
+    
     [[LocationTracker sharedLocationTracker] startLocationUpdates];
 }
 
